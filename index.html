@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>PortalLab</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="PortalLab: a first-person WebXR portal puzzle game for Meta Quest and desktop.">
+<style>
+  @font-face { font-family: 'IBM Plex Mono'; src: url('assets/fonts/ibmplexmono-medium.ttf') format('truetype'); font-weight: 400 700; font-display: swap; }
+  :root { --bg: #1b1d21; --plate: #23262b; --ink: #e8e6df; --mute: #8c9097; --line: #d8d6ce; --blue: #2f8cff; --orange: #ff8a1f; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; background: var(--bg); color: var(--ink); font-family: 'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace; overflow: hidden; }
+  #app { position: fixed; inset: 0; }
+  #gl { display: block; width: 100%; height: 100%; outline: none; }
+  #landing { position: fixed; inset: 0; display: flex; align-items: flex-end; padding: 32px; background: rgba(20, 22, 25, 0.78); }
+  #landing[hidden] { display: none; }
+  .box { width: min(560px, 100%); background: var(--plate); border: 3px solid var(--line); }
+  .box header { background: var(--line); color: var(--plate); padding: 16px 24px; display: flex; justify-content: space-between; align-items: baseline; }
+  .box header h1 { margin: 0; font-size: 32px; letter-spacing: 0.06em; }
+  .box header span { font-size: 12px; letter-spacing: 0.08em; }
+  .hazard { height: 8px; background: repeating-linear-gradient(135deg, #1b1d21 0 12px, #d8d6ce 12px 24px); }
+  .body { padding: 24px; display: grid; gap: 16px; }
+  .status { font-size: 13px; color: var(--mute); letter-spacing: 0.06em; min-height: 16px; word-break: break-all; }
+  .bar { height: 16px; border: 3px solid var(--line); }
+  .bar > div { height: 100%; width: 0; background: var(--ink); transition: width 0.15s steps(6); }
+  button { font: inherit; font-size: 16px; letter-spacing: 0.06em; text-align: left; color: var(--ink); background: transparent; border: 3px solid var(--line); padding: 14px 16px; cursor: pointer; border-radius: 0; }
+  button:hover:not(:disabled) { background: var(--ink); color: var(--plate); }
+  button:active:not(:disabled) { transform: translateY(2px); }
+  button:disabled { color: var(--mute); border-color: var(--mute); cursor: not-allowed; }
+  #msg { font-size: 12px; color: var(--orange); letter-spacing: 0.04em; }
+  #error { font-size: 13px; color: #fff; background: #7a1f1f; border: 3px solid var(--line); padding: 12px 16px; white-space: pre-wrap; }
+  #error[hidden], [hidden] { display: none !important; }
+  table { border-collapse: collapse; font-size: 12px; width: 100%; color: var(--mute); }
+  td { padding: 4px 0; border-top: 1px solid #3a3e44; vertical-align: top; }
+  td:first-child { color: var(--ink); width: 38%; padding-right: 12px; }
+  .dot { display: inline-block; width: 10px; height: 10px; margin-right: 6px; }
+</style>
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/",
+    "@dimforge/rapier3d-compat": "https://cdn.jsdelivr.net/npm/@dimforge/rapier3d-compat@0.12.0/rapier.es.js",
+    "lil-gui": "https://cdn.jsdelivr.net/npm/lil-gui@0.19.2/dist/lil-gui.esm.min.js"
+  }
+}
+</script>
+</head>
+<body>
+<div id="app"></div>
+
+<div id="landing">
+  <div class="box">
+    <header><h1>PORTALLAB</h1><span>TEST FACILITY / WEBXR</span></header>
+    <div class="hazard"></div>
+    <div class="body">
+      <div class="status" id="status">STARTING...</div>
+      <div class="bar loading-only"><div id="bar-fill"></div></div>
+      <div id="error" hidden></div>
+      <div id="msg"></div>
+      <button id="btn-vr" class="ready-only" hidden disabled>ENTER VR</button>
+      <button id="btn-desktop" class="ready-only" hidden>PLAY ON DESKTOP</button>
+      <table class="ready-only" hidden>
+        <tr><td>QUEST</td><td>Trigger on gun hand: <span class="dot" style="background:var(--blue)"></span>blue portal. Other trigger: <span class="dot" style="background:var(--orange)"></span>orange. Stick left: move. Stick right: turn. A: jump. B/Y: clear portals. X: menu. Off-hand grip: pick up / drop.</td></tr>
+        <tr><td>DESKTOP</td><td>WASD move, mouse look (click to capture). LMB blue, RMB orange. Space jump. E pick up / drop. R clear portals. Esc menu.</td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<noscript><div style="position:fixed;inset:0;padding:32px;background:#1b1d21;color:#e8e6df">PortalLab needs JavaScript and WebGL.</div></noscript>
+
+<script>
+  // If the module graph never starts (CDN blocked, wrong path, old browser) say so instead of failing silently.
+  setTimeout(function () {
+    if (!window.__portallabBooted && document.getElementById('error').hidden) {
+      var e = document.getElementById('error');
+      e.hidden = false;
+      e.textContent = 'The game has not started after 15 s. Check the browser console. Typical causes: jsDelivr (cdn.jsdelivr.net) is blocked or offline, a file path is wrong (paths are case-sensitive on GitHub Pages), or the browser does not support ES modules + import maps.';
+    }
+  }, 15000);
+</script>
+<script type="module" src="src/main.js"></script>
+</body>
+</html>
