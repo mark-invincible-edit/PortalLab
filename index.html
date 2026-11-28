@@ -76,7 +76,7 @@
     if (!window.__portallabBooted && document.getElementById('error').hidden) {
       var e = document.getElementById('error');
       e.hidden = false;
-      e.textContent = 'The game has not started after 15 s. Check the browser console. Typical causes: jsDelivr (cdn.jsdelivr.net) is blocked or offline, a file path is wrong (paths are case-sensitive on GitHub Pages), or the browser does not support ES modules + import maps.';
+      e.textContent = 'The game has not started after 15 s. There could be an error, or it is just taking long. Check the browser console. Typical causes: jsDelivr (cdn.jsdelivr.net) is blocked or offline, a file path is wrong (paths are case-sensitive on GitHub Pages), or the browser does not support ES modules + import maps.';
     }
   }, 15000);
 </script>
